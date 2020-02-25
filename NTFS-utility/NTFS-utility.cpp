@@ -1,7 +1,10 @@
 ﻿#include <iostream>
 #include <fstream>
+#include <string>
+#include <intrin.h>
 using namespace std;
 
+#pragma pack(push,1)
 struct BIOSParameterBlock {
 	unsigned short bytesPerSector;
 	unsigned char sectorPerCluster;
@@ -12,7 +15,7 @@ struct BIOSParameterBlock {
 	unsigned short tableSize16;
 	unsigned short sectorsPerTrack;
 	unsigned short headSideCount;
-	unsigned short hiddenSectorCount;
+	unsigned int hiddenSectorCount;
 	unsigned char unused[8];
 	unsigned long long totalSectorCount;
 	unsigned long long mftLogicalClusterNumber;
@@ -26,12 +29,13 @@ struct BIOSParameterBlock {
 
 struct NTFSBootSector {
 	unsigned char jumpInstructions[3];
-	unsigned char oemId[8];
+	unsigned long long oemId;
 	//unsigned char dummy[];
 	struct BIOSParameterBlock bpb;
 	unsigned char bootCode[426];
 	unsigned short endMarker;
 };
+#pragma pack(pop)
 
 int main()
 {
@@ -40,7 +44,8 @@ int main()
 	struct NTFSBootSector bs;
 	if (!fin.fail()) {
 		fin.read((char*)&bs, sizeof(bs));
-		//cout << bs.jumpInstructions[0] + bs.jumpInstructions[1] + bs.jumpInstructions[2] << "\n";
+
+		cout << "oemId: " << bs.oemId << "\n";
 		cout << "bytesPerSector: " << bs.bpb.bytesPerSector << "\n";
 		cout << "reservedSectorCount: " << bs.bpb.reservedSectorCount << "\n";
 		cout << "rootEntryCount: " << bs.bpb.rootEntryCount << "\n";
@@ -54,14 +59,12 @@ int main()
 		cout << "clusterPerMftRecord: " << bs.bpb.clusterPerMftRecord << "\n";
 		cout << "volumeSerialNumber: " << bs.bpb.volumeSerialNumber << "\n";
 		cout << "checksum: " << bs.bpb.checksum << "\n";
-		
-		cout << "jumpInstructions: " << bs.jumpInstructions << "\n";
+
 		return 0;
 	}
 	else {
 		cout << "Error, motherf*cker!\n";
 		return 1;
 	}
-    cout << "Hello World!\n";
 	return 0;
 }
